@@ -1,0 +1,71 @@
+$OpenBSD: patch-bgs_c,v 1.2 2015/05/23 11:58:19 jung Exp $
+Index: bgs.c
+--- bgs.c.orig
++++ bgs.c
+@@ -18,7 +18,7 @@
+ #define LENGTH(x)       (sizeof x / sizeof x[0])
+ 
+ /* image modes */
+-enum { ModeCenter, ModeZoom, ModeScale, ModeLast };
++enum { ModeCenter, ModeZoom, ModeFill, ModeScale, ModeLast };
+ 
+ /* typedefs */
+ typedef struct {
+@@ -94,10 +94,10 @@ drawbg(void) {
+ 		imlib_context_set_image(buffer);
+ 		switch(mode) {
+ 		case ModeCenter:
+-			nw = (monitors[i].w - w) / 2;
+-			nh = (monitors[i].h - h) / 2;
+-			nx = monitors[i].x + (monitors[i].w - nw) / 2;
+-			ny = monitors[i].y + (monitors[i].h - nh) / 2;
++			nw = w;
++			nh = h;
++			nx = (monitors[i].w - w) / 2;
++			ny = (monitors[i].h - h) / 2;
+ 			break;
+ 		case ModeZoom:
+ 			nw = monitors[i].w;
+@@ -111,6 +111,20 @@ drawbg(void) {
+ 				nx = monitors[i].x + (int)ceil(w * ny / h) / 2;
+ 			}
+ 			break;
++		case ModeFill:
++			if(((float)w / h) > ((float)monitors[i].w / monitors[i].h)) {
++				nh = monitors[i].h;
++				nw = nh * w / h;
++				nx = monitors[i].x + (monitors[i].w - nw) / 2;
++				ny = monitors[i].y;
++			}
++			else {
++				nw = monitors[i].w;
++				nh = nw * h / w;
++				ny = monitors[i].y + (monitors[i].h - nh) / 2;
++				nx = monitors[i].x;
++			}
++			break;
+ 		default: /* ModeScale */
+ 			factor = MAX((double)w / monitors[i].w,
+ 					(double)h / monitors[i].h);
+@@ -229,7 +243,7 @@ main(int argc, char *argv[]) {
+ 	int opt;
+ 	const char *col = NULL;
+ 
+-	while((opt = getopt(argc, argv, "cC:Rvxz")) != -1)
++	while((opt = getopt(argc, argv, "cC:Rvxzf")) != -1)
+ 		switch(opt) {
+ 		case 'c':
+ 			mode = ModeCenter; break;
+@@ -245,9 +259,11 @@ main(int argc, char *argv[]) {
+ 			running = True; break;
+ 		case 'z':
+ 			mode = ModeZoom; break;
++		case 'f':
++			mode = ModeFill; break;
+ 		case '?': /* Fallthrough */
+ 		default:
+-			die("usage: bgs [-v] [-c] [-C hex] [-z] [-R] [-x] [IMAGE]...\n");
++			die("usage: bgs [-v] [-c] [-C hex] [-z] [-f] [-R] [-x] [IMAGE]...\n");
+ 		}
+ 	argc -= optind;
+ 	argv += optind;

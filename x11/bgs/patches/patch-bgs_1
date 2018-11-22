@@ -1,0 +1,20 @@
+$OpenBSD: patch-bgs_1,v 1.2 2015/05/23 11:58:19 jung Exp $
+Index: bgs.1
+--- bgs.1.orig
++++ bgs.1
+@@ -1,4 +1,4 @@
+-.TH BGS 1 bgs\-VERSION
++.TH BGS 1 bgs\-${VERSION}
+ .SH NAME
+ bgs \- background setter
+ .SH SYNOPSIS
+@@ -31,6 +31,9 @@ specifies background color to use when the image does 
+ .TP
+ .B \-z
+ zooms image rather than scaling it.
++.TP
++.B \-f
++zooms the image preserving aspect ratio until it fits.
+ .TP
+ .B \-R
+ prevents automatic rotation for optimal screen fill.
